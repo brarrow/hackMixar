@@ -25,13 +25,13 @@ def normalizeLight(img):
 def diff(img1, img2, th=20):
     img1_norml = normalizeLight(img1)
     img2_norml = normalizeLight(img2)
-
-    img1_norml = applyKern(img1_norml, 5)
-    img2_norml = applyKern(img2_norml, 5)
-
     img1b = blur(img1_norml, 10)
     img2b = blur(img2_norml, 10)
-    diff = cv2.absdiff(img1b, img2b)
+
+    img1_eros = erode(img1b, 10, 5)
+    img2_eros = erode(img2b, 10, 5)
+
+    diff = cv2.absdiff(img1_eros, img2_eros)
     mask = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
 
     imask = mask > th
@@ -51,7 +51,19 @@ def getimg(path):
     return open_cv_image
 
 
-def applyKern(img, size):
+def dilatate(img, size=5, iterations=2):
+    kernel = np.ones((size, size), np.uint8)
+    dilatation = cv2.dilate(img, kernel, iterations)
+    return dilatation
+
+
+def erode(img, size=5, iterations=2):
+    kernel = np.ones((size, size), np.uint8)
+    erosion = cv2.erode(img, kernel, iterations)
+    return erosion
+
+
+def sharp(img, size):
     kernel = np.ones((size, size), np.uint8)
     dilatation = cv2.dilate(img, kernel, iterations=2)
     erosion = cv2.erode(dilatation, kernel, iterations=1)
