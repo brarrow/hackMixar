@@ -1,11 +1,15 @@
 import cv2
 import numpy as np
-from PIL import Image
 
+import detectors.people_hog_detector as pepdet
+import detectors.utils as utils
+from detectors.utils import get_hog, get_img, drawbb
 from filters.filters import dilatate, normalize_light, erode, blur
 
+hog = get_hog()
 
-def diff(img1, img2, th=20):
+
+def det_diff(img1, img2, th=20):
     img1buf = img1.copy()
     img2buf = img2.copy()
 
@@ -30,20 +34,18 @@ def diff(img1, img2, th=20):
     return canvas
 
 
-def getimg(path):
-    pil_image = Image.open(path).convert('RGB')
-    open_cv_image = np.array(pil_image)
-    # Convert RGB to BGR
-    open_cv_image = open_cv_image[:, :, ::-1].copy()
-    return open_cv_image
-
-
 def det_motions(img1, img2):
-    diffimg = diff(img1, img2)
+    diffimg = det_diff(img1, img2)
     counturs = get_counters(diffimg, 5)
     for countur in counturs:
         img2 = drawbb(img2, *countur[:4])
     return img2
+
+
+def det_human(img):
+    rects = pepdet.detectHuman(img, hog)
+    res = utils.drawbb(img, rects)
+    return res
 
 
 def find_counters(img):
@@ -64,11 +66,6 @@ def find_counters(img):
         return sortedConters
 
 
-def drawbb(img, x, y, w, h):
-    cv2.rectangle(img, (x, y), (x + w, y + h), (200, 0, 0), 4)
-    return img
-
-
 def get_counters(img, count=5):
     listConters = find_counters(img)
     res = []
@@ -84,8 +81,8 @@ def test_smoke():
     imgpath1 = "noman.png"
     imgpath2 = "yesman.png"
 
-    img1 = getimg(imgpath1)
-    img2 = getimg(imgpath2)
+    img1 = get_img(imgpath1)
+    img2 = get_img(imgpath2)
 
     res = det_motions(img1, img2)
     cv2.imwrite('bbxs.jpg', res)
@@ -95,7 +92,7 @@ def test_diff():
     imgpath1 = "nosteam.png"
     imgpath2 = "yessteam.png"
 
-    img1 = getimg(imgpath1)
-    img2 = getimg(imgpath2)
+    img1 = get_img(imgpath1)
+    img2 = get_img(imgpath2)
 
-    diff(img1, img2)
+    det_diff(img1, img2)
