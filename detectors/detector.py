@@ -1,5 +1,4 @@
 import cv2
-import matplotlib.pylab as plt
 import numpy as np
 from PIL import Image
 
@@ -23,15 +22,18 @@ def normalizeLight(img):
     return final
 
 
-def diff(img1, img2):
+def diff(img1, img2, th=20):
     img1_norml = normalizeLight(img1)
     img2_norml = normalizeLight(img2)
+
+    img1_norml = applyKern(img1_norml, 5)
+    img2_norml = applyKern(img2_norml, 5)
 
     img1b = blur(img1_norml, 10)
     img2b = blur(img2_norml, 10)
     diff = cv2.absdiff(img1b, img2b)
     mask = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
-    th = 20
+
     imask = mask > th
 
     canvas = np.zeros_like(img2, np.uint8)
@@ -49,29 +51,68 @@ def getimg(path):
     return open_cv_image
 
 
+def applyKern(img, size):
+    kernel = np.ones((size, size), np.uint8)
+    dilatation = cv2.dilate(img, kernel, iterations=2)
+    erosion = cv2.erode(dilatation, kernel, iterations=1)
+    return erosion
+
+
+
 def blur(img, size=5):
     kernel = np.ones((size, size), np.float32) / size ** 2
     dst = cv2.filter2D(img, -1, kernel)
     return dst
 
 
-def det_smoke(img):
-    res = blur(img, 2)
-    plt.imshow(res)
-    plt.show()
-    cv2.imwrite('smokedet.png', res)
+def det_smoke(img1, img2):
+    diffimg = diff(img1, img2)
+    counturs = get_counters(diffimg)
+    for countur in counturs:
+        img2 = drawbb(img2, *countur)
+    return img2
 
+
+def findCountur(img, mx, mx_area, listConters):
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    image, contours, hierarchy = cv2.findContours(img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    for cont in contours:
+        x, y, w, h = cv2.boundingRect(cont)
+        area = w * h
+        listConters.append([x, y, w, h])
+        if area > mx_area:
+            mx = x, y, w, h
+            mx_area = area
+    return mx, mx_area, listConters
+
+
+def drawbb(img, x, y, w, h):
+    cv2.rectangle(img, (x, y), (x + w, y + h), (200, 0, 0), 4)
+    return img
+
+
+def get_counters(img):
+    mx = (0, 0, 0, 0)
+    mx_area = 0
+    listConters = []
+    mx, mx_area, listConters = findCountur(img, mx, mx_area, listConters)
+    return listConters
 
 def test_smoke():
-    imgpath = "scene1.png"
-    img = getimg(imgpath)
-    img = normalizeLight(img)
-    det_smoke(img)
+    imgpath1 = "nosteam.png"
+    imgpath2 = "yessteam.png"
+
+    img1 = getimg(imgpath1)
+    img2 = getimg(imgpath2)
+
+    res = det_smoke(img1, img2)
+    cv2.imwrite('bbxs.jpg', res)
+    
 
 
 def test_diff():
-    imgpath1 = "scene1.png"
-    imgpath2 = "scene2.png"
+    imgpath1 = "nosteam.png"
+    imgpath2 = "yessteam.png"
 
     img1 = getimg(imgpath1)
     img2 = getimg(imgpath2)
@@ -79,4 +120,4 @@ def test_diff():
     diff(img1, img2)
 
 
-test_diff()
+test_smoke()
