@@ -79,23 +79,25 @@ def blur(img, size=5):
 
 def det_smoke(img1, img2):
     diffimg = diff(img1, img2)
-    counturs = get_counters(diffimg)
+    counturs = get_conters(diffimg, 5)
     for countur in counturs:
-        img2 = drawbb(img2, *countur)
+        img2 = drawbb(img2, *countur[:4])
     return img2
 
 
-def findCountur(img, mx, mx_area, listConters):
+def findCounturs(img):
     img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
     image, contours, hierarchy = cv2.findContours(img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    listConters = []
+
     for cont in contours:
         x, y, w, h = cv2.boundingRect(cont)
         area = w * h
-        listConters.append([x, y, w, h])
-        if area > mx_area:
-            mx = x, y, w, h
-            mx_area = area
-    return mx, mx_area, listConters
+        listConters.append([x, y, w, h, area])
+    listConters = np.array(listConters)
+    sortedConters = (listConters[np.argsort(listConters[:, 4])])[::-1]
+    listConters.size
+    return sortedConters
 
 
 def drawbb(img, x, y, w, h):
@@ -103,12 +105,15 @@ def drawbb(img, x, y, w, h):
     return img
 
 
-def get_counters(img):
-    mx = (0, 0, 0, 0)
-    mx_area = 0
-    listConters = []
-    mx, mx_area, listConters = findCountur(img, mx, mx_area, listConters)
-    return listConters
+def get_conters(img, count=5):
+    listConters = findCounturs(img)
+    res = []
+    if len(listConters) < count:
+        return listConters
+    else:
+        for i in range(count):
+            res.append(listConters[i])
+        return res
 
 def test_smoke():
     imgpath1 = "nosteam.png"
