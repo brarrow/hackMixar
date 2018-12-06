@@ -2,36 +2,23 @@ import cv2
 import numpy as np
 from PIL import Image
 
-
-def normalizeLight(img):
-    # -----Converting image to LAB Color model-----------------------------------
-    lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
-
-    # -----Splitting the LAB image to different channels-------------------------
-    l, a, b = cv2.split(lab)
-
-    # -----Applying CLAHE to L-channel-------------------------------------------
-    clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
-    cl = clahe.apply(l)
-
-    # -----Merge the CLAHE enhanced L-channel with the a and b channel-----------
-    limg = cv2.merge((cl, a, b))
-
-    # -----Converting image from LAB Color model to RGB model--------------------
-    final = cv2.cvtColor(limg, cv2.COLOR_LAB2BGR)
-    return final
+from filters.filters import dilatate, normalize_light, erode, blur
 
 
 def diff(img1, img2, th=20):
-    img1_norml = normalizeLight(img1)
-    img2_norml = normalizeLight(img2)
-    img1b = blur(img1_norml, 10)
-    img2b = blur(img2_norml, 10)
+    img1buf = img1.copy()
+    img2buf = img2.copy()
 
-    img1_eros = erode(img1b, 10, 5)
-    img2_eros = erode(img2b, 10, 5)
+    img1buf = normalize_light(img1buf)
+    img2buf = normalize_light(img2buf)
+    img1buf = blur(img1buf, 10)
+    img2buf = blur(img2buf, 10)
 
-    diff = cv2.absdiff(img1_eros, img2_eros)
+    img1buf = erode(img1buf, 10, 5)
+    img2buf = erode(img2buf, 10, 5)
+
+    diff = cv2.absdiff(img1buf, img2buf)
+    diff = dilatate(diff, 5, 3)
     mask = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
 
     imask = mask > th
@@ -51,41 +38,15 @@ def getimg(path):
     return open_cv_image
 
 
-def dilatate(img, size=5, iterations=2):
-    kernel = np.ones((size, size), np.uint8)
-    dilatation = cv2.dilate(img, kernel, iterations)
-    return dilatation
-
-
-def erode(img, size=5, iterations=2):
-    kernel = np.ones((size, size), np.uint8)
-    erosion = cv2.erode(img, kernel, iterations)
-    return erosion
-
-
-def sharp(img, size):
-    kernel = np.ones((size, size), np.uint8)
-    dilatation = cv2.dilate(img, kernel, iterations=2)
-    erosion = cv2.erode(dilatation, kernel, iterations=1)
-    return erosion
-
-
-
-def blur(img, size=5):
-    kernel = np.ones((size, size), np.float32) / size ** 2
-    dst = cv2.filter2D(img, -1, kernel)
-    return dst
-
-
 def det_smoke(img1, img2):
     diffimg = diff(img1, img2)
-    counturs = get_conters(diffimg, 5)
+    counturs = get_counters(diffimg, 5)
     for countur in counturs:
         img2 = drawbb(img2, *countur[:4])
     return img2
 
 
-def findCounturs(img):
+def find_counters(img):
     img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
     image, contours, hierarchy = cv2.findContours(img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     listConters = []
@@ -105,8 +66,8 @@ def drawbb(img, x, y, w, h):
     return img
 
 
-def get_conters(img, count=5):
-    listConters = findCounturs(img)
+def get_counters(img, count=5):
+    listConters = find_counters(img)
     res = []
     if len(listConters) < count:
         return listConters
@@ -115,9 +76,10 @@ def get_conters(img, count=5):
             res.append(listConters[i])
         return res
 
+
 def test_smoke():
-    imgpath1 = "nosteam.png"
-    imgpath2 = "yessteam.png"
+    imgpath1 = "noman.png"
+    imgpath2 = "yesman.png"
 
     img1 = getimg(imgpath1)
     img2 = getimg(imgpath2)
