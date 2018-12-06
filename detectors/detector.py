@@ -38,7 +38,7 @@ def getimg(path):
     return open_cv_image
 
 
-def det_smoke(img1, img2):
+def det_motions(img1, img2):
     diffimg = diff(img1, img2)
     counturs = get_counters(diffimg, 5)
     for countur in counturs:
@@ -54,11 +54,14 @@ def find_counters(img):
     for cont in contours:
         x, y, w, h = cv2.boundingRect(cont)
         area = w * h
-        listConters.append([x, y, w, h, area])
+        if area > 40:
+            listConters.append([x, y, w, h, area])
     listConters = np.array(listConters)
-    sortedConters = (listConters[np.argsort(listConters[:, 4])])[::-1]
-    listConters.size
-    return sortedConters
+    if (len(listConters) < 2):
+        return listConters
+    else:
+        sortedConters = (listConters[np.argsort(listConters[:, 4])])[::-1]
+        return sortedConters
 
 
 def drawbb(img, x, y, w, h):
@@ -84,10 +87,9 @@ def test_smoke():
     img1 = getimg(imgpath1)
     img2 = getimg(imgpath2)
 
-    res = det_smoke(img1, img2)
+    res = det_motions(img1, img2)
     cv2.imwrite('bbxs.jpg', res)
     
-
 
 def test_diff():
     imgpath1 = "nosteam.png"
@@ -97,6 +99,3 @@ def test_diff():
     img2 = getimg(imgpath2)
 
     diff(img1, img2)
-
-
-test_smoke()
