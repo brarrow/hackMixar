@@ -62,7 +62,7 @@ def main_loop(config):
     cap = cv2.VideoCapture("l_07_persons_0_02.mp4")
     while (cap.isOpened()):
         ret, frame = cap.read()
-        
+
         cv2.imshow('frame', frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
