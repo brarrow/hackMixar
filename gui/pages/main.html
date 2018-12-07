@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Система автоматизации видеонаблюдения</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- Loading Bootstrap -->
+    <link href="../frameworks/flat_ui/bootstrap/css/bootstrap.css" rel="stylesheet">
+
+    <!-- Loading Flat UI -->
+    <link href="../frameworks/flat_ui/css/flat-ui.css" rel="stylesheet">
+    <link href="../frameworks/flat_ui/css/demo.css" rel="stylesheet">
+
+    <link rel="shortcut icon" href="../frameworks/flat_ui/dist/img/favicon.ico">  
+	<link rel="stylesheet" type="text/css" href="../frameworks/jquery.imgareaselect-0.9.10/css/imgareaselect-default.css" />
+	  
+    <style>
+		html, body, #map, .content, #gui {
+            width: 100%; height: 100%; padding: 0; margin: 0;
+        }
+		html {
+			overflow: hidden
+		}
+		.navbar {
+			position: fixed;
+			width: 100%
+		}
+		.content{
+			padding:0px;
+			padding-top: 76px;
+		}
+		#gui td {
+			background: #eee;
+			border: 2px solid #bdc3c7
+		}
+		#new_detectors img {
+			width: 40px;
+			margin: 10px
+		}
+		.hov_img {
+			position: relative;
+			left: -65px;
+			margin-right: -65px !important;
+			opacity: 0;
+			transition: 0.25s;
+			transition-property: all;
+			transition-duration: 0.25s;
+			transition-timing-function: ease;
+			transition-delay: 0s;
+		}
+		.hov_img:hover {
+			opacity:1; 
+			cursor: pointer;
+		}
+		.pattern {
+			font-size: 16px; color: #646769;
+			cursor: pointer;
+		}
+		.pattern:hover {
+			color:#5E7293
+		}
+		.block_header {
+			color: #646769;
+			font-size: 16px;
+			display: block;
+			background: #eee;
+			width: 100%;
+			font-weight: 900
+		}
+		.block_li, .block_data {
+			display: block;
+			margin-left: 0;
+			padding: 5px 15px;
+			width: 100%;
+			border-radius: 5px;
+			color: #646769;
+			font-size: 16px;
+			margin: 5px 0;
+			transition: 0.25s;
+			transition-property: all;
+			transition-duration: 0.25s;
+			transition-timing-function: ease;
+			transition-delay: 0s;
+			cursor: pointer;
+		}
+		.block_li:hover:not(.dis):not(.act) {
+			background: #ddd;
+		}
+		.block_li.act {
+			background: #34495e;
+			color: #fff
+		}
+		.block {
+			vertical-align: top; 
+			padding: 10px; 
+			overflow: auto;
+		}
+		.btn-hg {
+			border-radius: 4px;
+    		padding: 10px 15px;
+			font-size: 15px;
+    		font-weight: norma;
+			line-height: 1.4;
+		}
+		.select .btn.btn-hg .filter-option {
+			left: 13px;
+			right: 33px;
+			top: 10px;
+		}
+    </style>
+  </head>
+  <body>
+  		<nav class="navbar navbar-inverse navbar-embossed navbar-lg" role="navigation" style="border-radius: 0px; margin-bottom: 0px">
+					  <div class="navbar-header" >
+					    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse-02">
+					      <span class="sr-only">Toggle navigation</span>
+					    </button>
+					    <a class="navbar-brand" id="toolbar">Система автоматизации видеонаблюдения</a>
+					  </div>
+					
+					  <div class="collapse navbar-collapse" id="#navbar-collapse-02">	      
+					    <ul class="nav navbar-nav navbar-right">
+					      <li><a href="#"><span class="visible-sm visible-xs"><span class="fui-play"></span></span><span class="visible-md visible-lg"><span class="fui-play"></span></span></a></li>
+						  <li class="dropdown">
+					        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Камера L_05 <b class="caret"></b></a>
+					        <span class="dropdown-arrow"></span>
+					        <ul class="dropdown-menu">
+					          <li><a href="park_cabinet.html">Камера L_07 </a></li>
+					        </ul>
+					      </li>
+					      <li><a href="#"><span class="visible-sm visible-xs"><span class="fui-gear"></span></span><span class="visible-md visible-lg"><span class="fui-gear"></span></span></a></li>
+					    </ul>
+					  </div><!-- /.navbar-collapse -->
+					</nav>
+   
+	<div class="content">
+		<table id="gui">
+			<tr>
+				<td height="76px" id="new_detectors">
+					&nbsp;&nbsp;&nbsp;
+					<span style="font-size: 16px; color: #646769; font-weight: 900">
+					Детекторы </span>
+					<img src="../common/images/human.png">
+					<img src="../common/images/human_a.png" class="hov_img" onClick="addDetector(detector_types.human)">
+					<img src="../common/images/motion.png">
+					<img src="../common/images/motion_a.png" class="hov_img" onClick="addDetector(detector_types.motion)">
+					<img src="../common/images/boom.png">
+					<img src="../common/images/boom_a.png" class="hov_img" onClick="addDetector(detector_types.boom)">
+					<img src="../common/images/group.png">
+					<img src="../common/images/group_a.png" class="hov_img" onClick="addDetector(detector_types.group)">
+					&nbsp;&nbsp;&nbsp;
+					<span style="font-size: 16px; color: #646769; font-weight: 900">
+					Шаблоны </span>
+					&nbsp;&nbsp;&nbsp;
+					<span  class="pattern">
+					Шаблон 1 </span>
+					&nbsp;&nbsp;&nbsp;
+					<span class="pattern" >
+					Шаблон 2 </span>
+				</td>
+				<td rowspan=2 width="250" class="block" id="detectors">
+					<span class="block_header">
+						Список детекторов
+					</span>
+					 
+				</td>
+				<td rowspan=2 width="300" class="block">
+					<span class="block_header">
+						Параметры детектора
+					</span>
+					<div id="parms_container" style="display: none">
+						<span class="block_li" style="text-align: center">
+							Редактировать область отслеживания
+						</span>
+						<!--<div>
+							<span class="block_li dis">
+								Цвет объекта
+							</span>
+							<select name="huge" class="select-block mbl">
+								<option value="0">Любой</option>
+								<option value="0">Синий</option>
+								<option value="1">Красный</option>
+								<option value="1">Зелёный</option>
+								<option value="1">Желтый</option>
+								<option value="1">Чёрный</option>
+								<option value="1">Белый</option>
+							</select>
+						</div>-->
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<td rowspan=2 style="background: #000">
+					<img src="../common/images/l_05.jpg" width="100%" id="cam">
+				</td>
+			</tr>
+			<tr>
+				<td height="313px" class="block">
+					<span class="block_header">
+						Список событий
+					</span>
+					<span class="block_li">
+						Событие 1
+					</span>
+					<span class="block_li" style="text-align: center">
+						+ Добавить событие
+					</span>
+				</td>
+				<td class="block">
+					<div style="height: 313px;">
+						<span class="block_header">
+							Функции детектора
+						</span>
+						<div id="people_funcs" class="detector_funcs" style="display: none">
+							<span class="block_data">
+								- Количество людей в отслеживаемой области
+							</span>
+							<span class="block_data">
+								- Количество людей без касок в отслеживаемой области
+							</span>
+						</div>
+						<div id="motion_funcs" class="detector_funcs" style="display: none">
+							<span class="block_data">
+								- Количество объектов в отслеживаемой области
+							</span>
+						</div>
+						<div id="boom_funcs" class="detector_funcs" style="display: none">
+							<span class="block_data">
+								- Время распространения
+							</span>
+							<span class="block_data">
+								- Количество очагов
+							</span>
+						</div>
+						<div id="group_funcs" class="detector_funcs" style="display: none">
+							<span class="block_data">
+								- Количество людей в группе
+							</span>
+						</div>
+					</div>
+				</td>
+			</tr>
+		</table>
+ 	</div>
+	  
+    <script src="../frameworks/flat_ui/js/jquery-1.8.3.min.js"></script>
+    <script src="../frameworks/flat_ui/js/jquery-ui-1.10.3.custom.min.js"></script>
+    <script src="../frameworks/flat_ui/js/jquery.ui.touch-punch.min.js"></script>
+    <script src="../frameworks/flat_ui/js/bootstrap.min.js"></script>
+    <script src="../frameworks/flat_ui/js/bootstrap-select.js"></script>
+    <script src="../frameworks/flat_ui/js/bootstrap-switch.js"></script>
+    <script src="../frameworks/flat_ui/js/flatui-checkbox.js"></script>
+    <script src="../frameworks/flat_ui/js/flatui-radio.js"></script>
+    <script src="../frameworks/flat_ui/js/holder.js"></script>
+    <script src="../frameworks/flat_ui/js/flatui-fileinput.js"></script>
+    <script src="../frameworks/flat_ui/js/jquery.tagsinput.js"></script>
+    <script src="../frameworks/flat_ui/js/jquery.placeholder.js"></script>
+    <script src="../frameworks/flat_ui/js/typeahead.js"></script>
+    <script src="../frameworks/flat_ui/js/application.js"></script>
+	<script src="../frameworks/jquery.imgareaselect-0.9.10/scripts/jquery.imgareaselect.pack.js"></script>
+	<script>
+		 $(document).ready(function () {
+			ias = $('#cam').imgAreaSelect({
+				handles: true,
+				instance: true,
+				disable: true,
+				onSelectEnd: function(img, selection){
+					ias.setOptions({ disable: true, hide:false });
+					ias.update();
+					//ias.cancelSelection();
+					
+				}
+			});
+		});
+		var detectors = [];
+		var detector_types = {
+			human : "Люди",
+			motion : "Движение",
+			boom : "Пар",
+			group : "Скопление людей"
+		}
+		function addDetector(type){
+			var counter = 1;
+			for(var i = 0; i < detectors.length; i++)
+				if(detectors[i].type == type)
+					counter++;
+			var title = prompt('Название детектора', type+" "+counter);
+			if(title != ""){
+				var id = detectors.length;
+				detectors.push({
+					id : id,
+					type : type,
+					title : title
+				});
+				var detector_gui = $("#detectors").append('<span class="block_li obj"'+
+														  ' onClick="select(this)" data-id='+id+' id="detector'+id+'">'+title+'</span>');
+				select($('#detector'+id));
+			}
+		}
+		function select(obj){
+			$("#parms_container").css("display", "block");
+			$(".obj.act").removeClass("act");
+			$(obj).addClass("act");
+			show_funcs(detectors[$(obj).data("id")].type);
+		}
+		function show_funcs(type){
+			$(".detector_funcs").css("display", "none");
+			switch(type){
+				case detector_types.human:
+					$("#people_funcs").css("display", "block");
+					break;
+				case detector_types.motion:
+					$("#motion_funcs").css("display", "block");
+					break;
+				case detector_types.boom:
+					$("#boom_funcs").css("display", "block");
+					break;
+				case detector_types.group:
+					$("#group_funcs").css("display", "block");
+					break;
+			}
+		}
+	</script>
+    
+  </body>
+</html>
