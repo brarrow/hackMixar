@@ -32,7 +32,6 @@ def det_diff(img1, img2, th=20):
     canvas = np.zeros_like(img2, np.uint8)
     canvas[imask] = img2[imask]
 
-    cv2.imwrite("result.png", canvas)
     return canvas
 
 
