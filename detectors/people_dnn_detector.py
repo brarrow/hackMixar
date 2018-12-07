@@ -1,5 +1,8 @@
 import cv2
 
+import config
+import detectors.detector as detector
+from videostream.stream import skip_frames, draw_smoke
 
 
 def execut(net):
@@ -8,41 +11,55 @@ def execut(net):
     sum = time.time() + 1
     out = None
     while (cap.isOpened()):
-        ret, frame = cap.read()
+        ret, frame1 = cap.read()
+        skip_frames(cap, 4)
+        ret, frame2 = cap.read()
+        orig_now_img = frame2.copy()
         # frame = frame[int(frame.shape[0]/2):frame.shape[0], int(frame.shape[1]/20):int(frame.shape[1]-1200)]
         # frame = cv2.resize(frame, (int(frame.shape[1]/4), int(frame.shape[0]/4)), interpolation=cv2.INTER_AREA)
         # frame = frame[:int(frame.shape[0]/2)][:int(frame.shape[0]/2)]
 
-        print(frame.shape)
-        if time.time() > sum:
-            sum = sum + 1
-            blob = cv2.dnn.blobFromImage(frame, size=(544, 320))
-            net.setInput(blob)
-            out = net.forward()
-            # out = out["detection_out"]
-            print(out.shape)
+        diffimg = detector.det_diff(frame1, frame2)
+        counturs = detector.get_counters(diffimg, 20)
 
-            # gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            for detect in out.reshape(-1, 7):
-                confidence = detect[2]
-                x_min = int(detect[3] * frame.shape[1])
-                y_min = int(detect[4] * frame.shape[0])
-                x_max = int(detect[5] * frame.shape[1])
-                y_max = int(detect[6] * frame.shape[0])
-                if confidence > 0.05:
-                    cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (0, 255, 0))
-        try:
-            for detect in out.reshape(-1, 7):
-                confidence = detect[2]
-                x_min = int(detect[3] * frame.shape[1])
-                y_min = int(detect[4] * frame.shape[0])
-                x_max = int(detect[5] * frame.shape[1])
-                y_max = int(detect[6] * frame.shape[0])
-                if confidence > 0.05:
-                    cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (0, 255, 0))
-        except Exception:
-            pass
-        cv2.imshow('frame', frame)
+        # for detect motion
+        result = detector.det_motions(orig_now_img, counturs, config.get_cond("3"))
+
+        # for detect smoke
+        result = detector.det_smoke(orig_now_img, counturs, config.get_cond("2"))
+        result = draw_smoke(result)
+
+        print(frame2.shape)
+
+        # if time.time() > sum:
+        #     sum = sum + 1
+        #     blob = cv2.dnn.blobFromImage(frame2, size=(544, 320))
+        #     net.setInput(blob)
+        #     out = net.forward()
+        #     # out = out["detection_out"]
+        #     print(out.shape)
+        #
+        #     # gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        #     for detect in out.reshape(-1, 7):
+        #         confidence = detect[2]
+        #         x_min = int(detect[3] * frame2.shape[1])
+        #         y_min = int(detect[4] * frame2.shape[0])
+        #         x_max = int(detect[5] * frame2.shape[1])
+        #         y_max = int(detect[6] * frame2.shape[0])
+        #         if confidence > 0.05:
+        #             cv2.rectangle(frame2, (x_min, y_min), (x_max, y_max), (0, 255, 0))
+        # try:
+        #     for detect in out.reshape(-1, 7):
+        #         confidence = detect[2]
+        #         x_min = int(detect[3] * frame2.shape[1])
+        #         y_min = int(detect[4] * frame2.shape[0])
+        #         x_max = int(detect[5] * frame2.shape[1])
+        #         y_max = int(detect[6] * frame2.shape[0])
+        #         if confidence > 0.05:
+        #             cv2.rectangle(frame2, (x_min, y_min), (x_max, y_max), (0, 255, 0))
+        # except Exception:
+        #     pass
+        cv2.imshow('frame', frame2)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 

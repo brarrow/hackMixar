@@ -35,9 +35,12 @@ def det_diff(img1, img2, th=20):
     return canvas
 
 
-def det_motions(frame, counturs, danger):
-    for countur in counturs:
-        frame = drawbb(frame, *countur[:4], danger)
+def det_motions(frame, counturs, conditions):
+    for cond in conditions:
+        cond_counter = cond[:4]
+        for countur in counturs:
+            if check_intercept(*cond_counter, *countur[:4]):
+                frame = drawbb(frame, *countur[:4], danger)
     return frame
 
 
@@ -86,6 +89,62 @@ def counter_check_inside(counters):
     return res
 
 
+def check_intercept(x1, y1, w1, h1, x2, y2, w2, h2):
+    intercept = False
+    # rightup2
+    rightupx2 = x2 + w2
+    rightupy2 = y2
+
+    # leftup2
+    leftupx2 = x2
+    leftupy2 = y2
+
+    # rightdown2
+    rightdownx2 = x2 + w2
+    rightdowny2 = y2 + h2
+
+    # leftdown2
+    leftdownx2 = x2
+    leftdowny2 = y2 + h2
+
+    # rightup1
+    rightupx1 = x1 + w1
+    rightupy1 = y1
+
+    # leftup1
+    leftupx1 = x1
+    leftupy1 = y1
+
+    # rightdown1
+    rightdownx1 = x1 + w1
+    rightdowny1 = y1 + h1
+
+    # leftdown1
+    leftdownx1 = x1
+    leftdowny1 = y1 + h1
+
+    # for x
+    if (rightupx2 > leftupx1 and rightupx2 < rightupx1):
+        intercept = True
+    if (leftupx2 > leftupx1 and leftupx2 < rightupx1):
+        intercept = True
+    if (rightdownx2 > leftupx1 and rightdownx2 < rightupx1):
+        intercept = True
+    if (leftdownx2 > leftupx1 and leftupx2 < rightupx1):
+        intercept = True
+
+    # for y
+    if (rightupy2 < leftdowny1 and rightupy2 > rightupy1):
+        intercept = True
+    if (leftupy2 < leftdowny1 and leftupy2 > rightupy1):
+        intercept = True
+    if (rightdowny2 < leftdowny1 and rightdowny2 > rightupy1):
+        intercept = True
+    if (leftdowny2 < leftdowny1 and leftdowny2 > rightupy1):
+        intercept = True
+    return intercept
+
+
 def maximize_counters(counters):
     for i in range(len(counters)):
         counter1 = counters[i]
@@ -94,57 +153,7 @@ def maximize_counters(counters):
             counter2 = counters[j]
             intercept = False
             x2, y2, w2, h2 = counter2[:4]
-            # rightup2
-            rightupx2 = x2 + w2
-            rightupy2 = y2
-
-            # leftup2
-            leftupx2 = x2
-            leftupy2 = y2
-
-            # rightdown2
-            rightdownx2 = x2 + w2
-            rightdowny2 = y2 + h2
-
-            # leftdown2
-            leftdownx2 = x2
-            leftdowny2 = y2 + h2
-
-            # rightup1
-            rightupx1 = x1 + w1
-            rightupy1 = y1
-
-            # leftup1
-            leftupx1 = x1
-            leftupy1 = y1
-
-            # rightdown1
-            rightdownx1 = x1 + w1
-            rightdowny1 = y1 + h1
-
-            # leftdown1
-            leftdownx1 = x1
-            leftdowny1 = y1 + h1
-
-            # for x
-            if (rightupx2 > leftupx1 and rightupx2 < rightupx1):
-                intercept = True
-            if (leftupx2 > leftupx1 and leftupx2 < rightupx1):
-                intercept = True
-            if (rightdownx2 > leftupx1 and rightdownx2 < rightupx1):
-                intercept = True
-            if (leftdownx2 > leftupx1 and leftupx2 < rightupx1):
-                intercept = True
-
-            # for y
-            if (rightupy2 < leftdowny1 and rightupy2 > rightupy1):
-                intercept = True
-            if (leftupy2 < leftdowny1 and leftupy2 > rightupy1):
-                intercept = True
-            if (rightdowny2 < leftdowny1 and rightdowny2 > rightupy1):
-                intercept = True
-            if (leftdowny2 < leftdowny1 and leftdowny2 > rightupy1):
-                intercept = True
+            check_intercept(x1, y1, w1, h1, x2, y2, w2, h2)
             xn, yn, wn, hn = x2, y2, w2, h2
             if (intercept):
                 xn, yn, wn, hn = min(x1, x2), min(y1, y2), max(w1, w2), max(h1, h2)

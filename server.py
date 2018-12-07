@@ -65,7 +65,10 @@ if __name__ == '__main__':
     httpd = server_class((HOST_NAME, PORT_NUMBER), MyHandler)
     print(time.asctime(), 'Server Starts - %s:%s' % (HOST_NAME, PORT_NUMBER))
     config = Config("{\"conditions\":[\
-     {\"type\":0,\"operation\":2,\"value\":0,\"event\":0,\"area\":[90,50,183,166]}\
+     {\"type\":0,\"operation\":2,\"value\":0,\"event\":0,\"area\":[90,50,183,166]},\
+    {\"type\":1,\"operation\":2,\"value\":0,\"event\":0,\"area\":[90,50,183,166]},\
+    {\"type\":2,\"operation\":2,\"value\":0,\"event\":0,\"area\":[90,50,183,166]},\
+    {\"type\":3,\"operation\":2,\"value\":0,\"event\":0,\"area\":[90,50,183,166]}\
     ]}")
     main_loop(config)
     try:
