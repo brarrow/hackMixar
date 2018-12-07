@@ -61,11 +61,13 @@ def main_loop(config):
     stream.init_stream(config)
 
 if __name__ == '__main__':
-    main_loop(None)
     server_class = HTTPServer
     httpd = server_class((HOST_NAME, PORT_NUMBER), MyHandler)
     print(time.asctime(), 'Server Starts - %s:%s' % (HOST_NAME, PORT_NUMBER))
-
+    config = Config("{\"conditions\":[\
+     {\"type\":0,\"operation\":2,\"value\":0,\"event\":0,\"area\":[90,50,183,166]}\
+    ]}")
+    main_loop(config)
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
