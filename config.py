@@ -25,10 +25,4 @@ class Config:
             area[3] -= area[2]
             self.conditions[i]["area"] = area
             self.conditions[i]["isTrue"] = False
-        print(d)
         return d
-
-
-config = Config("{\"conditions\":[\
- {\"type\":0,\"operation\":2,\"value\":0,\"event\":0,\"area\":[90,50,183,166]}\
-]}")

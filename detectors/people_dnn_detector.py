@@ -1,35 +1,39 @@
 import cv2
 
-import config
 import detectors.detector as detector
+import videostream.objects as objects
+from config import Config
 from videostream.stream import skip_frames, draw_smoke
 
 
-def execut(net):
+def execut(net=None):
     import time
-    cap = cv2.VideoCapture("detectors/l_07_persons_0_02.mp4")
+    cap = cv2.VideoCapture("l_05_persons_0_smoke_1_01.mp4")
     sum = time.time() + 1
     out = None
+    config = Config("{\"conditions\":[\
+         {\"type\":0,\"operation\":2,\"value\":0,\"event\":0,\"area\":[0,0,1000,1000]},\
+        {\"type\":1,\"operation\":2,\"value\":0,\"event\":0,\"area\":[0,0,1000,1000]},\
+        {\"type\":2,\"operation\":2,\"value\":0,\"event\":0,\"area\":[0,0,1000,1000]},\
+        {\"type\":3,\"operation\":2,\"value\":0,\"event\":0,\"area\":[0,0,1000,1000]}\
+        ]}")
     while (cap.isOpened()):
         ret, frame1 = cap.read()
         skip_frames(cap, 4)
         ret, frame2 = cap.read()
         orig_now_img = frame2.copy()
-        # frame = frame[int(frame.shape[0]/2):frame.shape[0], int(frame.shape[1]/20):int(frame.shape[1]-1200)]
-        # frame = cv2.resize(frame, (int(frame.shape[1]/4), int(frame.shape[0]/4)), interpolation=cv2.INTER_AREA)
-        # frame = frame[:int(frame.shape[0]/2)][:int(frame.shape[0]/2)]
 
         diffimg = detector.det_diff(frame1, frame2)
         counturs = detector.get_counters(diffimg, 20)
 
         # for detect motion
-        result = detector.det_motions(orig_now_img, counturs, config.get_cond("3"))
+        # result = (detector.det_motions(orig_now_img, counturs, config))
 
-        # for detect smoke
-        result = detector.det_smoke(orig_now_img, counturs, config.get_cond("2"))
+        # # for detect smoke
+        result = orig_now_img
+        if (len(objects.smoke) == 0):
+            result = detector.det_smoke(frame2, counturs, config)
         result = draw_smoke(result)
-
-        print(frame2.shape)
 
         # if time.time() > sum:
         #     sum = sum + 1
@@ -59,9 +63,12 @@ def execut(net):
         #             cv2.rectangle(frame2, (x_min, y_min), (x_max, y_max), (0, 255, 0))
         # except Exception:
         #     pass
-        cv2.imshow('frame', frame2)
+        cv2.imshow('frame', result)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
+    cap.release()
+    cv2.destroyAllWindows()
+    return
 
     # cap.release()
     # cv2.destroyAllWindows()
@@ -106,17 +113,15 @@ if __name__ == '__main__':
     # blob = cv2.dnn.blobFromImage(frame)# , size=(544, 320))
     # out = exec_net.infer(inputs={'data': blob})
     # help(net)
-
-    frame = cv2.imread("4.PNG")
-    net2 = cv2.dnn.readNet("C:\\Intel\\computer_vision_sdk_2018.4.420\\deployment_tools\\intel_models\\pedestrian-detection-adas-0002\\FP32\\pedestrian-detection-adas-0002.xml",
-                           "C:\\Intel\\computer_vision_sdk_2018.4.420\\deployment_tools\\intel_models\\pedestrian-detection-adas-0002\\FP32\\pedestrian-detection-adas-0002.bin")
-    net2 = cv2.dnn.readNet(
-         "C:\\Intel\\computer_vision_sdk_2018.4.420\\deployment_tools\\intel_models\\person-vehicle-bike-detection-crossroad-0078\\FP32\\person-vehicle-bike-detection-crossroad-0078.xml",
-         "C:\\Intel\\computer_vision_sdk_2018.4.420\\deployment_tools\\intel_models\\person-vehicle-bike-detection-crossroad-0078\\FP32\\person-vehicle-bike-detection-crossroad-0078.bin")
-    net = cv2.dnn.readNet(
-        "C:\\Intel\\computer_vision_sdk_2018.4.420\\deployment_tools\\intel_models\\person-vehicle-bike-detection-crossroad-0078\\FP32\\person-vehicle-bike-detection-crossroad-0078.xml",
-        "C:\\Intel\\computer_vision_sdk_2018.4.420\\deployment_tools\\intel_models\\person-vehicle-bike-detection-crossroad-0078\\FP32\\person-vehicle-bike-detection-crossroad-0078.bin")
-    net = cv2.dnn.readNet(
-        "C:\\Intel\\computer_vision_sdk_2018.4.420\\deployment_tools\\intel_models\\person-detection-retail-0013\\FP32\\person-detection-retail-0013.xml",
-        "C:\\Intel\\computer_vision_sdk_2018.4.420\\deployment_tools\\intel_models\\person-detection-retail-0013\\FP32\\person-detection-retail-0013.bin")
-    execut(net)
+    # net2 = cv2.dnn.readNet("C:\\Intel\\computer_vision_sdk_2018.4.420\\deployment_tools\\intel_models\\pedestrian-detection-adas-0002\\FP32\\pedestrian-detection-adas-0002.xml",
+    #                        "C:\\Intel\\computer_vision_sdk_2018.4.420\\deployment_tools\\intel_models\\pedestrian-detection-adas-0002\\FP32\\pedestrian-detection-adas-0002.bin")
+    # net2 = cv2.dnn.readNet(
+    #      "C:\\Intel\\computer_vision_sdk_2018.4.420\\deployment_tools\\intel_models\\person-vehicle-bike-detection-crossroad-0078\\FP32\\person-vehicle-bike-detection-crossroad-0078.xml",
+    #      "C:\\Intel\\computer_vision_sdk_2018.4.420\\deployment_tools\\intel_models\\person-vehicle-bike-detection-crossroad-0078\\FP32\\person-vehicle-bike-detection-crossroad-0078.bin")
+    # net = cv2.dnn.readNet(
+    #     "C:\\Intel\\computer_vision_sdk_2018.4.420\\deployment_tools\\intel_models\\person-vehicle-bike-detection-crossroad-0078\\FP32\\person-vehicle-bike-detection-crossroad-0078.xml",
+    #     "C:\\Intel\\computer_vision_sdk_2018.4.420\\deployment_tools\\intel_models\\person-vehicle-bike-detection-crossroad-0078\\FP32\\person-vehicle-bike-detection-crossroad-0078.bin")
+    # net = cv2.dnn.readNet(
+    #     "C:\\Intel\\computer_vision_sdk_2018.4.420\\deployment_tools\\intel_models\\person-detection-retail-0013\\FP32\\person-detection-retail-0013.xml",
+    #     "C:\\Intel\\computer_vision_sdk_2018.4.420\\deployment_tools\\intel_models\\person-detection-retail-0013\\FP32\\person-detection-retail-0013.bin")
+    execut()

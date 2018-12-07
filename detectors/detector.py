@@ -35,25 +35,34 @@ def det_diff(img1, img2, th=20):
     return canvas
 
 
-def det_motions(frame, counturs, conditions):
-    for cond in conditions:
-        cond_counter = cond[:4]
-        for countur in counturs:
-            if check_intercept(*cond_counter, *countur[:4]):
-                frame = drawbb(frame, *countur[:4], danger)
+def det_motions(frame, counturs, config):
+    conditions = config.conditions
+    for i, cond in enumerate(conditions):
+        if cond["type"] == 3:
+            cond_counter = cond["area"]
+            for j, countur in enumerate(counturs):
+                if check_intercept(*cond_counter, *countur[:4]):
+                    conditions[i]["isTrue"] = True
+                    x, y, w, h = countur[:4]
+                    frame = drawbb(frame, *countur[:4], cond["event"])
     return frame
 
 
-def det_smoke(frame, counturs, danger):
-    for countur in counturs:
-        x, y, w, h = countur[:4]
-        bboximg = frame[x:x + w, y:y + h]
-        hist, tr1, tr2 = pyplot.hist(bboximg.mean(axis=2).flatten(), 255)
-        res = np.mean(hist)
-        if res > 80:
-            if danger > 0:
-                objects.smoke.append([*countur[:4], danger])
-            frame = drawbb(frame, *countur[:4], danger)
+def det_smoke(frame, counturs, config):
+    conditions = config.conditions
+    for i, cond in enumerate(conditions):
+        if cond["type"] == 2:
+            cond_counter = cond["area"]
+            for j, countur in enumerate(counturs):
+                # if check_intercept(*cond_counter, *countur[:4]):
+                x, y, w, h = countur[:4]
+                bboximg = frame[x:x + w, y:y + h]
+
+                hist, tr1, tr2 = pyplot.hist(bboximg.mean(axis=2).flatten(), 255)
+                res = np.mean(hist)
+                if res > 75:
+                    objects.smoke.append([*countur[:4], cond["event"]])
+                    frame = drawbb(frame, *countur[:4], cond["event"])
     return frame
 
 
@@ -153,7 +162,7 @@ def maximize_counters(counters):
             counter2 = counters[j]
             intercept = False
             x2, y2, w2, h2 = counter2[:4]
-            check_intercept(x1, y1, w1, h1, x2, y2, w2, h2)
+            intercept = check_intercept(x1, y1, w1, h1, x2, y2, w2, h2)
             xn, yn, wn, hn = x2, y2, w2, h2
             if (intercept):
                 xn, yn, wn, hn = min(x1, x2), min(y1, y2), max(w1, w2), max(h1, h2)
