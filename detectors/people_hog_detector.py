@@ -21,7 +21,7 @@ if __name__ == '__main__':
     # cap = cv2.VideoCapture(0)
 
     hog = cv2.HOGDescriptor()
-    hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
+    hog.setSVMDetector(cv2.HOGDescriptor_getDaimlerPeopleDetector())
     # while (True):
         # Capture frame-by-frame
         # ret, frame = cap.read()
