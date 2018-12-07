@@ -2,6 +2,7 @@ import json
 
 
 class Config:
+    # area is x, y, w, h
     conditions = []
 
     def __init__(self, json):
@@ -10,7 +11,11 @@ class Config:
     def parsJSON(self, json_data):
         d = json.loads(json_data)
         self.conditions = d.get("conditions")
-
+        for i in range(len(self.conditions)):
+            area = self.conditions[i]["area"]
+            area[2] -= area[0]
+            area[3] -= area[2]
+            self.conditions[i]["area"] = area
         print(d)
         return d
 
