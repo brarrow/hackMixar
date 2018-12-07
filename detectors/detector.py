@@ -4,7 +4,8 @@ import numpy as np
 
 import detectors.people_hog_detector as pepdet
 import detectors.utils as utils
-from detectors.utils import get_hog, get_img, drawbb
+import videostream.objects as objects
+from detectors.utils import get_hog, drawbb
 from filters.filters import dilatate, normalize_light, erode, blur
 
 hog = get_hog()
@@ -35,29 +36,28 @@ def det_diff(img1, img2, th=20):
     return canvas
 
 
-def det_motions(frame, counturs):
+def det_motions(frame, counturs, danger):
     for countur in counturs:
-        frame = drawbb(frame, *countur[:4])
+        frame = drawbb(frame, *countur[:4], danger)
     return frame
 
 
-def det_smoke(frame, counturs):
+def det_smoke(frame, counturs, danger):
     for countur in counturs:
         x, y, w, h = countur[:4]
         bboximg = frame[x:x + w, y:y + h]
         hist, tr1, tr2 = pyplot.hist(bboximg.mean(axis=2).flatten(), 255)
         res = np.mean(hist)
         if res > 80:
-            frame = drawbb(frame, *countur[:4])
+            if danger > 0:
+                objects.smoke.append([*countur[:4], danger])
+            frame = drawbb(frame, *countur[:4], danger)
     return frame
 
 
-
-
-
-def det_human(img):
+def det_human(img, danger):
     rects = pepdet.detectHuman(img, hog)
-    res = utils.drawbb(img, rects)
+    res = utils.drawbb(img, rects, danger)
     return res
 
 
@@ -154,7 +154,6 @@ def maximize_counters(counters):
     return counters
 
 
-
 def find_counters(img):
     img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
     image, contours, hierarchy = cv2.findContours(img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
@@ -184,8 +183,6 @@ def get_nonblack(img):
     return npimg.any(axis=-1).sum()
 
 
-
-
 def get_counters(img, count=5):
     listConters = find_counters(img)
     res = []
@@ -195,24 +192,3 @@ def get_counters(img, count=5):
         for i in range(count):
             res.append(listConters[i])
         return res
-
-
-def test_smoke():
-    imgpath1 = "noman.png"
-    imgpath2 = "yesman.png"
-
-    img1 = get_img(imgpath1)
-    img2 = get_img(imgpath2)
-
-    res = det_motions(img1, img2)
-    cv2.imwrite('bbxs.jpg', res)
-    
-
-def test_diff():
-    imgpath1 = "nosteam.png"
-    imgpath2 = "yessteam.png"
-
-    img1 = get_img(imgpath1)
-    img2 = get_img(imgpath2)
-
-    det_diff(img1, img2)

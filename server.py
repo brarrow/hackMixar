@@ -1,8 +1,7 @@
 import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
-import cv2
-
+import videostream.stream as stream
 from config import Config
 
 HOST_NAME = 'localhost'
@@ -59,19 +58,14 @@ class MyHandler(BaseHTTPRequestHandler):
 
 
 def main_loop(config):
-    cap = cv2.VideoCapture("l_07_persons_0_02.mp4")
-    while (cap.isOpened()):
-        ret, frame = cap.read()
-
-        cv2.imshow('frame', frame)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
+    stream.init_stream(config)
 
 if __name__ == '__main__':
+    main_loop(None)
     server_class = HTTPServer
     httpd = server_class((HOST_NAME, PORT_NUMBER), MyHandler)
     print(time.asctime(), 'Server Starts - %s:%s' % (HOST_NAME, PORT_NUMBER))
+
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:

@@ -17,6 +17,12 @@ def get_img(path):
     return open_cv_image
 
 
-def drawbb(img, x, y, w, h):
-    cv2.rectangle(img, (x, y), (x + w, y + h), (200, 0, 0), 4)
+def drawbb(img, x, y, w, h, danger):
+    if danger == 0:
+        color = (0, 215, 255)
+    elif danger == 1:
+        color = (0, 140, 255)
+    else:
+        color = (0, 0, 255)
+    cv2.rectangle(img, (x, y), (x + w, y + h), color)
     return img
