@@ -1,5 +1,7 @@
-import time
+import time, os
 from http.server import BaseHTTPRequestHandler, HTTPServer
+
+from detectors.people_dnn_detector import dnn
 
 HOST_NAME = 'localhost'
 PORT_NUMBER = 9000
@@ -60,15 +62,18 @@ class MyHandler(BaseHTTPRequestHandler):
 
 
 if __name__ == '__main__':
-    server_class = HTTPServer
-    httpd = server_class((HOST_NAME, PORT_NUMBER), MyHandler)
+    # server_class = HTTPServer
+    # httpd = server_class((HOST_NAME, PORT_NUMBER), MyHandler)
     print(time.asctime(), 'Server Starts - %s:%s' % (HOST_NAME, PORT_NUMBER))
-    while(True):
-        if os.path.exists(os.path.join(os.getcwd(), "m.json")):
-            break
-    try:
-        httpd.serve_forever()
-    except KeyboardInterrupt:
-        pass
-    httpd.server_close()
+    # while(True):
+    #     if os.path.exists(os.path.join(os.getcwd(), "m.json")):
+    #         break
+    #
+    dnn(os.path.join(os.getcwd(), "m.json"))
+
+    # try:
+    #     httpd.serve_forever()
+    # except KeyboardInterrupt:
+    #     pass
+    # httpd.server_close()
     print(time.asctime(), 'Server Stops - %s:%s' % (HOST_NAME, PORT_NUMBER))

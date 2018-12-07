@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as pyplot
 from PIL import Image
 
-import config
+from  config import Config
 import videostream.objects as objects
 
 
@@ -239,10 +239,9 @@ def maximize_counters(counters):
             counters[j] = counter2
     return counters
 
-
 def find_counters(img):
     img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-    image, contours, hierarchy = cv2.findContours(img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    contours, hierarchy = cv2.findContours(img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     listConters = []
 
     for cont in contours:
@@ -280,30 +279,36 @@ def get_counters(img, count=5):
         return res
 
 
-def execut(net):
+def execut(net, conf):
     import time
     cap = cv2.VideoCapture("detectors\l_05_persons_0_03.mp4")
     sum = time.time() + 1
     out = None
+
+    config = conf
+    box  = config.conditions[0]["area"]
+    print(box)
     while (cap.isOpened()):
         ret, frame = cap.read()
+        # frame = frame[box[0]:box[0]+box[2], box[1]:box[1]+box[3]]
+
         # frame = frame[int(frame.shape[0]/2):frame.shape[0], int(frame.shape[1]/20):int(frame.shape[1]-1200)]
         # frame = cv2.resize(frame, (int(frame.shape[1]/4), int(frame.shape[0]/4)), interpolation=cv2.INTER_AREA)
         # frame = frame[:int(frame.shape[0]/2)][:int(frame.shape[0]/2)]
         ret, frame1 = cap.read()
         # skip_frames(cap, 4)
-        ret, frame = cap.read()
+        # ret, frame = cap.read()
         orig_now_img = frame.copy()
         diffimg = det_diff(frame1, frame)
         counturs = get_counters(diffimg, 20)
 
         # for detect motion
-        result = det_motions(orig_now_img, counturs, config.get_cond("3"))
-
+        #result = det_motions(orig_now_img, counturs, config.get_cond("3"))
+        #cv2.imshow("1", result)
         # for detect smoke
-        result = det_smoke(orig_now_img, counturs, config.get_cond("2"))
-        result = draw_smoke(result)
-
+        #result = det_smoke(orig_now_img, counturs, config.get_cond("2"))
+        #result = draw_smoke(result)
+        #cv2.imshow("2", result)
         if time.time() > sum:
             sum = sum + 1
             blob = cv2.dnn.blobFromImage(frame, size=(544, 320))
@@ -321,7 +326,9 @@ def execut(net):
                 y_max = int(detect[6] * frame.shape[0])
                 if confidence > 0.5:
                     cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (0, 255, 0))
-                cv2.rectangle(frame, (500, 400), (1300, 1100), (0, 0, 255), 5)
+                #frame[ y_min:y_max,x_min:x_max:, 2] += 20
+                # cv2.rectangle(frame, (500, 400), (1300, 1100), (0, 0, 255), 5)
+                cv2.rectangle(frame, (box[0],box[0]+box[2]),( box[1],box[1]+box[3]), (0, 0, 255), 5)
         try:
             for detect in out.reshape(-1, 7):
                 confidence = detect[2]
@@ -331,7 +338,10 @@ def execut(net):
                 y_max = int(detect[6] * frame.shape[0])
                 if confidence > 0.5:
                     cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (0, 255, 0))
-                cv2.rectangle(frame, (500, 400), (1300, 1100), (0, 0, 255), 5)
+                #frame[y_min:y_max,x_min:x_max:, 2] += 20
+                # cv2.rectangle(frame, (500, 400), (1300, 1100), (0, 0, 255), 5)
+                cv2.rectangle(frame, (box[0],box[0]+box[2]),( box[1],box[1]+box[3]), (0, 0, 255), 5)
+                # frame[:, ::, 2] += 20
         except Exception:
             pass
         cv2.imshow('frame', frame)
@@ -363,7 +373,7 @@ def execut(net):
     # cap.release()
 
 # cv2.waitKey()
-if __name__ == '__main__':
+def dnn(conf):# if __name__ == '__main__':
     print("START")
     # from openvino.inference_engine import IENetwork, IEPlugin
 
@@ -394,4 +404,5 @@ if __name__ == '__main__':
     net = cv2.dnn.readNet(
         "C:\\Intel\\computer_vision_sdk_2018.4.420\\deployment_tools\\intel_models\\person-detection-retail-0013\\FP32\\person-detection-retail-0013.xml",
         "C:\\Intel\\computer_vision_sdk_2018.4.420\\deployment_tools\\intel_models\\person-detection-retail-0013\\FP32\\person-detection-retail-0013.bin")
-    execut(net)
+    # net = ""
+    execut(net, conf)
