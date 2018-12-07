@@ -582,12 +582,16 @@
 				//alert($("#detectors_list").val());
 				detector = find_detector_by_id($("#detectors_list").val());
 				//alert(detector.title);
+				var scale = w/$("#cam").width();
 				var condition = {
 					"detector" : detector.title,
 					"type":$("#parms_list").val(),
 					"operation":$("#operations_list").val(),
 					"value":$("#value_box").val(),
-					"area":detector.area
+					"area":[Math.round(detector.area[0]*scale),
+							Math.round(detector.area[1]*scale),
+							Math.round(detector.area[2]*scale),
+							Math.round(detector.area[3]*scale)]
 				}
 				//alert(3)
 				current.conditions.push(condition);
@@ -612,7 +616,7 @@
 			current.type = $("#event_type").val();
 		})
 		function exp(){
-			alert(JSON.stringify(events));
+			prompt("json",JSON.stringify(events));
 		}
 	</script>
     
