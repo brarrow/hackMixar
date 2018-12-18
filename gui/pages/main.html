@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Система автоматизации видеонаблюдения</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- Loading Bootstrap -->
+    <link href="../frameworks/flat_ui/bootstrap/css/bootstrap.css" rel="stylesheet">
+
+    <!-- Loading Flat UI -->
+    <link href="../frameworks/flat_ui/css/flat-ui.css" rel="stylesheet">
+    <link href="../frameworks/flat_ui/css/demo.css" rel="stylesheet">
+
+    <link rel="shortcut icon" href="../frameworks/flat_ui/dist/img/favicon.ico">  
+	<link rel="stylesheet" type="text/css" href="../frameworks/jquery.imgareaselect-0.9.10/css/imgareaselect-default.css" />
+	  
+    <style>
+		html, body, #map, .content, #gui {
+            width: 100%; height: 100%; padding: 0; margin: 0;
+        }
+		html {
+			overflow: hidden
+		}
+		.navbar {
+			position: fixed;
+			width: 100%
+		}
+		.content{
+			padding:0px;
+			padding-top: 76px;
+		}
+		#gui td {
+			background: #eee;
+			border: 2px solid #bdc3c7
+		}
+		#new_detectors img {
+			width: 40px;
+			margin: 10px
+		}
+		.hov_img {
+			position: relative;
+			left: -65px;
+			margin-right: -65px !important;
+			opacity: 0;
+			transition: 0.25s;
+			transition-property: all;
+			transition-duration: 0.25s;
+			transition-timing-function: ease;
+			transition-delay: 0s;
+		}
+		.hov_img:hover {
+			opacity:1; 
+			cursor: pointer;
+		}
+		.pattern {
+			font-size: 16px; color: #646769;
+			cursor: pointer;
+		}
+		.pattern:hover {
+			color:#5E7293
+		}
+		.block_header {
+			color: #646769;
+			font-size: 16px;
+			display: block;
+			background: #eee;
+			width: 100%;
+			font-weight: 900
+		}
+		.block_li, .block_data {
+			display: block;
+			margin-left: 0;
+			padding: 5px 15px;
+			width: 100%;
+			border-radius: 5px;
+			color: #646769;
+			font-size: 16px;
+			margin: 5px 0;
+			transition: 0.25s;
+			transition-property: all;
+			transition-duration: 0.25s;
+			transition-timing-function: ease;
+			transition-delay: 0s;
+			cursor: pointer;
+		}
+		.block_li:hover:not(.dis):not(.act) {
+			background: #ddd;
+		}
+		.block_li.act {
+			background: #34495e;
+			color: #fff
+		}
+		.block {
+			vertical-align: top; 
+			padding: 10px; 
+			overflow: auto;
+		}
+		.btn-hg {
+			border-radius: 4px;
+    		padding: 10px 15px;
+			font-size: 15px;
+    		font-weight: norma;
+			line-height: 1.4;
+		}
+		.select .btn.btn-hg .filter-option {
+			left: 13px;
+			right: 33px;
+			top: 10px;
+		}
+		#event_inspector {
+			display: none;
+		}
+		
+    </style>
+  </head>
+  <body>
+  		<nav class="navbar navbar-inverse navbar-embossed navbar-lg" role="navigation" style="border-radius: 0px; margin-bottom: 0px">
+					  <div class="navbar-header" >
+					    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse-02">
+					      <span class="sr-only">Toggle navigation</span>
+					    </button>
+					    <a class="navbar-brand" id="toolbar">Система автоматизации видеонаблюдения</a>
+					  </div>
+					
+					  <div class="collapse navbar-collapse" id="#navbar-collapse-02">	      
+					    <ul class="nav navbar-nav navbar-right">
+					      <li><a href="javascript:exp()"><span class="visible-sm visible-xs" ><span class="fui-play"></span></span><span class="visible-md visible-lg"><span class="fui-play"></span></span></a></li>
+						  <li class="dropdown">
+					        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Камера L_05 <b class="caret"></b></a>
+					        <span class="dropdown-arrow"></span>
+					        <ul class="dropdown-menu">
+					          <li><a href="park_cabinet.html">Камера L_07 </a></li>
+					        </ul>
+					      </li>
+					      <li><a href="#"><span class="visible-sm visible-xs"><span class="fui-gear"></span></span><span class="visible-md visible-lg"><span class="fui-gear"></span></span></a></li>
+					    </ul>
+					  </div><!-- /.navbar-collapse -->
+					</nav>
+   
+	<div class="content">
+		<table id="gui">
+			<tr>
+				<td height="76px" id="new_detectors">
+					&nbsp;&nbsp;&nbsp;
+					<span style="font-size: 16px; color: #646769; font-weight: 900">
+					Детекторы </span>
+					<img src="../common/images/human.png">
+					<img src="../common/images/human_a.png" class="hov_img" onClick="addDetector(detector_types.human)">
+					<img src="../common/images/motion.png">
+					<img src="../common/images/motion_a.png" class="hov_img" onClick="addDetector(detector_types.motion)">
+					<img src="../common/images/boom.png">
+					<img src="../common/images/boom_a.png" class="hov_img" onClick="addDetector(detector_types.boom)">
+					<img src="../common/images/group.png">
+					<img src="../common/images/group_a.png" class="hov_img" onClick="addDetector(detector_types.group)">
+					&nbsp;&nbsp;&nbsp;
+					<span style="font-size: 16px; color: #646769; font-weight: 900">
+					Шаблоны </span>
+					&nbsp;&nbsp;&nbsp;
+					<span  class="pattern">
+					Шаблон 1 </span>
+					&nbsp;&nbsp;&nbsp;
+					<span class="pattern" >
+					Шаблон 2 </span>
+				</td>
+				<td rowspan=2 width="250" class="block" id="detectors">
+					<span class="block_header">
+						Список детекторов
+					</span>
+					 
+				</td>
+				<td rowspan=2 width="300" class="block" id="detector_parms">
+					<span class="block_header">
+						Параметры детектора
+					</span>
+					<div id="parms_container" style="display: none">
+						<span class="block_li" style="text-align: center" id="edit_area_button" onClick="edit_area()">
+							Редактировать область отслеживания
+						</span>
+						<a class="btn btn-lg btn-block btn-default" onClick="delete_edit_area()">Удалить область отслеживания</a>
+						<a class="btn btn-lg btn-block btn-danger" onClick="delete_obj()">Удалить детектор</a>
+						<!--<div>
+							<span class="block_li dis">
+								Цвет объекта
+							</span>
+							<select name="huge" class="select-block mbl">
+								<option value="0">Любой</option>
+								<option value="0">Синий</option>
+								<option value="1">Красный</option>
+								<option value="1">Зелёный</option>
+								<option value="1">Желтый</option>
+								<option value="1">Чёрный</option>
+								<option value="1">Белый</option>
+							</select>
+						</div>-->
+					</div>
+				</td>
+				<td rowspan=3 width="300" class="block" id="event_inspector">
+					<span class="block_header">
+						Конструктор события
+					</span>
+					<div id="inspector" style="max-height: 600px; overflow: auto">
+						<span class="block_li dis">
+							Условия
+						</span>
+						<div id="conditions_list">
+						</div>
+						<span class="block_li dis">
+							Выбор детектора
+						</span>
+						<select name="huge" class="select-block mbl" id="detectors_list">
+						</select>
+						<span class="block_li dis">
+							Выбор функции
+						</span>
+						<select name="huge" class="select-block mbl" id="parms_list">
+						</select>
+						<span class="block_li dis">
+							Выбор операции
+						</span>
+						<select name="huge" class="select-block mbl" id="operations_list">
+							<option value="2">></option>
+							<option value="1">=</option>
+							<option value="0"><</option>
+						</select>
+						<input type="number" step="0.01" value="" placeholder="Значение" id="value_box" class="form-control input-lg">
+						<br>
+						<a class="btn btn-lg btn-block btn-success" onClick="addCondition()">Добавить условие</a>
+						<br>
+						<span class="block_li dis">
+							Тип события
+						</span>
+						<select name="huge" class="select-block mbl" id="event_type">
+							<option value="0">Подозрение на угрозу</option>
+							<option value="1">Опасность</option>
+							<option value="2">Тревога</option>
+						</select>
+						<a class="btn btn-lg btn-block btn-danger" onclick="delete_obj()">Удалить событие</a>
+						<br>
+						<br>
+						<br>
+					</div>																			
+				</td>
+			</tr>
+			<tr>
+				<td rowspan=2 style="background: #000">
+					<img src="../common/images/l_05.jpg" width="100%" id="cam">
+				</td>
+			</tr>
+			<tr>
+				<td height="313px" class="block">
+					<span class="block_header">
+						Список событий
+					</span>
+					<div id="events">
+					</div>
+					<span class="block_li" style="text-align: center" onClick="addEvent()">
+						+ Добавить событие
+					</span>
+				</td>
+				<td class="block" id="detector_funcs">
+					<div style="height: 313px;">
+						<span class="block_header">
+							Функции детектора
+						</span>
+						<div id="people_funcs" class="detector_funcs" style="display: none">
+							<span class="block_data">
+								- Количество людей в отслеживаемой области
+							</span>
+							<span class="block_data">
+								- Количество людей без касок в отслеживаемой области
+							</span>
+						</div>
+						<div id="motion_funcs" class="detector_funcs" style="display: none">
+							<span class="block_data">
+								- Количество объектов в отслеживаемой области
+							</span>
+						</div>
+						<div id="boom_funcs" class="detector_funcs" style="display: none">
+							<span class="block_data">
+								- Время распространения
+							</span>
+							<span class="block_data">
+								- Количество очагов
+							</span>
+						</div>
+						<div id="group_funcs" class="detector_funcs" style="display: none">
+							<span class="block_data">
+								- Количество людей в группе
+							</span>
+						</div>
+					</div>
+				</td>
+			</tr>
+		</table>
+ 	</div>
+	  
+    <script src="../frameworks/flat_ui/js/jquery-1.8.3.min.js"></script>
+    <script src="../frameworks/flat_ui/js/jquery-ui-1.10.3.custom.min.js"></script>
+    <script src="../frameworks/flat_ui/js/jquery.ui.touch-punch.min.js"></script>
+    <script src="../frameworks/flat_ui/js/bootstrap.min.js"></script>
+    <script src="../frameworks/flat_ui/js/bootstrap-select.js"></script>
+    <script src="../frameworks/flat_ui/js/bootstrap-switch.js"></script>
+    <script src="../frameworks/flat_ui/js/flatui-checkbox.js"></script>
+    <script src="../frameworks/flat_ui/js/flatui-radio.js"></script>
+    <script src="../frameworks/flat_ui/js/holder.js"></script>
+    <script src="../frameworks/flat_ui/js/flatui-fileinput.js"></script>
+    <script src="../frameworks/flat_ui/js/jquery.tagsinput.js"></script>
+    <script src="../frameworks/flat_ui/js/jquery.placeholder.js"></script>
+    <script src="../frameworks/flat_ui/js/typeahead.js"></script>
+    <script src="../frameworks/flat_ui/js/application.js"></script>
+	<script src="../frameworks/jquery.imgareaselect-0.9.10/scripts/jquery.imgareaselect.pack.js"></script>
+	<script>
+		var w = 1920;
+		var h = 1080;
+		var funcs = [
+			"Количество людей в отслеживаемой области",
+			"Количество людей без касок в отслеживаемой области",
+			"Количество очагов",
+			"Количество объектов в отслеживаемой области",
+			"Количество людей в группе",
+			"Время распространения"
+		];
+		var operators = [
+			"<",
+			"=",
+			">"
+		]
+		 $(document).ready(function () {
+			ias = $('#cam').imgAreaSelect({
+				handles: true,
+				instance: true,
+				disable: true,
+				onSelectEnd: function(img, selection){
+					ias.setOptions({ disable: true });
+					ias.update();
+					
+					$("#edit_area_button").removeClass("act");
+					if(current != null){
+						if(selection.x2 == 0)
+							current.area = null
+						else{
+							current.area = [selection.x1,selection.y1,selection.x2,selection.y2];
+							//alert(current.area)
+						}
+					}
+					//ias.cancelSelection();
+					
+				}
+			});
+		});
+		var id_counter = 0;
+		var detectors = [];
+		var events = [];
+		var current = null;
+		var detector_types = {
+			human : "Люди",
+			motion : "Движение",
+			boom : "Пар",
+			group : "Скопление людей"
+		}
+		function addDetector(type){
+			var counter = 1;
+			for(var i = 0; i < detectors.length; i++)
+				if(detectors[i].type == type)
+					counter++;
+			var title = prompt('Название детектора', type+" "+counter);
+			if(title != "" && title != null){
+				var id = id_counter++;
+				detectors.push({
+					id : id,
+					type : type,
+					title : title,
+					obj_type : 0,
+					area: null
+				});
+				var detector_gui = $("#detectors").append('<span class="block_li obj"'+
+														  ' onClick="select(this)" data-obj_type=0 data-id='+id+' id="detector'+id+'">'+title+'</span>');
+				select($('#detector'+id));
+				build_detectors_list();
+			}
+		}
+		function select(obj){
+			//alert('sel '+$(obj).data("obj_type"));
+			if($(obj).data("obj_type") == 0){
+				//alert('ssss')
+				show_detector_inspector();
+				$("#parms_container").css("display", "block");
+				$(".obj.act").removeClass("act");
+				$(obj).addClass("act");
+				current = null;
+				if($("#edit_area_button").hasClass("act"))
+					$("#edit_area_button").removeClass("act");
+				ias.setSelection(0, 0, $("#cam").width(), $("#cam").height(), true);
+				ias.update();
+				current = find_detector_by_id($(obj).data("id"));
+				show_funcs(current.type);
+				if(current.area != null){
+					ias.setSelection(current.area[0], current.area[1], current.area[2], current.area[3], true);
+					//ias.setSelection(0, 0, 0, 0, true);
+					ias.update();
+				}
+			}
+			else {
+				$(".obj.act").removeClass("act");
+				$(obj).addClass("act");
+				current = null;
+				if($("#edit_area_button").hasClass("act"))
+					$("#edit_area_button").removeClass("act");
+				ias.setSelection(0, 0, $("#cam").width(), $("#cam").height(), true);
+				ias.update();
+				current = find_event_by_id($(obj).data("id"));
+				build_conditions();
+				build_detectors_list();
+				show_event_inspector();
+			}
+		}
+		function delete_obj(){
+			//alert("delete_obj");
+			if(current != null){
+				//alert("2");
+				if(current.obj_type == 0){
+					//alert("3");
+					$(".obj.act").removeClass("act");
+					$("#parms_container").css("display", "none");
+					$("#detector"+current.id).remove();
+					var pos = detectors.indexOf(current);
+					detectors.splice(pos, 1);
+					current = null;
+					show_funcs(-1);
+					ias.setSelection(0, 0, $("#cam").width(), $("#cam").height(), true);
+					ias.setOptions({ disable: true});
+					ias.update();
+					if($("#edit_area_button").hasClass("act"))
+						$("#edit_area_button").removeClass("act");
+				}
+				else {
+					$(".obj.act").removeClass("act");
+					$("#parms_container").css("display", "none");
+					$("#event"+current.id).remove();
+					var pos = events.indexOf(current);
+					events.splice(pos, 1);
+					current = null;
+					show_funcs(-1);
+					ias.setSelection(0, 0, $("#cam").width(), $("#cam").height(), true);
+					ias.setOptions({ disable: true});
+					ias.update();
+					if($("#edit_area_button").hasClass("act"))
+						$("#edit_area_button").removeClass("act");
+					show_detector_inspector();
+				}
+				build_detectors_list();
+			}
+			
+		}
+		function show_funcs(type){
+			$(".detector_funcs").css("display", "none");
+			switch(type){
+				case detector_types.human:
+					$("#people_funcs").css("display", "block");
+					break;
+				case detector_types.motion:
+					$("#motion_funcs").css("display", "block");
+					break;
+				case detector_types.boom:
+					$("#boom_funcs").css("display", "block");
+					break;
+				case detector_types.group:
+					$("#group_funcs").css("display", "block");
+					break;
+			}
+		}
+		function find_detector_by_id(id){
+			for(var i = 0; i < detectors.length; i++)
+				if(detectors[i].id == id)
+					return detectors[i];
+			return null;
+		}
+		function find_event_by_id(id){
+			for(var i = 0; i < events.length; i++)
+				if(events[i].id == id)
+					return events[i];
+			return null;
+			
+		}
+		function edit_area(){
+			if(!$("#edit_area_button").hasClass("act")){
+				$("#edit_area_button").addClass("act");
+				ias.setSelection(0, 0, 1, 1, true);
+				ias.setOptions({ disable: false});
+				ias.update();
+			}
+			else {
+				$("#edit_area_button").removeClass("act");
+				if(current != null)
+					ias.setSelection(current.area[0], current.area[1], current.area[2], current.area[3], true);
+				ias.setOptions({ disable: true});
+				ias.update();
+			}
+		}
+		function delete_edit_area(){
+			if($("#edit_area_button").hasClass("act"))
+					$("#edit_area_button").removeClass("act");
+			ias.setSelection(0, 0, $("#cam").width(), $("#cam").height(), true);
+			ias.setOptions({ disable: true});
+			ias.update();
+			if(current != null){
+				current.area = null;
+			}
+			
+		}
+		function show_event_inspector(){
+			if(detectors.length == 0)
+				alert("Нет детекторов");
+			else {
+				$("#detector_funcs, #detector_parms").css("display", "none");
+				$("#event_inspector").css("display", "table-cell");
+			}
+		}
+		function show_detector_inspector(){
+			//alert("asds")
+			$("#detector_funcs, #detector_parms").css("display", "table-cell");
+			$("#event_inspector").css("display", "none");
+		}
+		function build_detectors_list(){
+			$("#detectors_list").html("");
+			for(var i = 0; i < detectors.length; i++){
+				$("#detectors_list").append("<option value='"+detectors[i].id+"'>"+detectors[i].title+"</option>")
+			}
+			build_parms_list();
+		}
+		$("#detectors_list").on("change", function(){
+			build_parms_list();
+		})
+		function build_parms_list(){
+			var detector = find_detector_by_id($("#detectors_list").val());
+			$("#parms_list").html("");
+			switch(detector.type){
+				case detector_types.human:
+					$("#parms_list")
+						.append("<option value=0>Количество людей в отслеживаемой области</option>")
+						.append("<option value=1>Количество людей без касок в отслеживаемой области</option>")
+					break;
+				case detector_types.motion:
+					$("#parms_list")
+						.append("<option value=3>Количество объектов в отслеживаемой области</option>")
+					break;
+				case detector_types.boom:
+					$("#parms_list")
+						.append("<option value=2>Количество очагов</option>")
+						.append("<option value=5>Время распространения</option>")
+					break;
+				case detector_types.group:
+					$("#parms_list")
+						.append("<option value=4>Количество людей в группе</option>")
+					break;
+			}
+		}
+		function addEvent(){
+			if(detectors.length == 0)
+				alert("Нет детекторов");
+			else {
+				var title = prompt('Название события', "Событие "+(events.length+1));
+				if(title != "" && title != null){
+					var id = id_counter++;
+					events.push({
+						id : id,
+						title : title,
+						obj_type : 1,
+						conditions : [],
+						type:0
+					});
+					var event_gui = $("#events").append('<span class="block_li obj"'+
+															  ' onClick="select(this)" data-obj_type=1 data-id='+id+' id="event'+id+'">'+title+'</span>');
+					select($('#event'+id));
+					
+				}
+			}
+		}
+		function addCondition(){
+			if(current.obj_type == 1){
+				//alert($("#detectors_list").val());
+				detector = find_detector_by_id($("#detectors_list").val());
+				//alert(detector.title);
+				var scale = w/$("#cam").width();
+				var condition = {
+					"detector" : detector.title,
+					"type":$("#parms_list").val(),
+					"operation":$("#operations_list").val(),
+					"value":$("#value_box").val(),
+					"area":[Math.round(detector.area[0]*scale),
+							Math.round(detector.area[1]*scale),
+							Math.round(detector.area[2]*scale),
+							Math.round(detector.area[3]*scale)]
+				}
+				//alert(3)
+				current.conditions.push(condition);
+				//alert(4)
+				build_conditions();
+			}
+		}
+		function build_conditions(){
+			//alert(1)
+			if(current.obj_type == 1){
+				//alert(2)
+				$("#conditions_list").html("");
+				for(var i = 0; i < current.conditions.length; i++){
+					$("#conditions_list").append('<span class="block_li dis">Условие '+i+'</span>');
+					$("#conditions_list").append('<span class="block_li dis">Детектор: '+current.conditions[i].detector+'</span>');
+					$("#conditions_list").append('<span class="block_li dis">Функция: '+funcs[current.conditions[i].type]+'</span>');
+					$("#conditions_list").append('<span class="block_li dis">Значение: '+operators[current.conditions[i].operation]+' '+current.conditions[i].value+'</span>');
+				}
+			}
+		}
+		$("#event_type").on("change", function(){
+			current.type = $("#event_type").val();
+		})
+		function exp(){
+			prompt("json",JSON.stringify(events));
+		}
+	</script>
+    
+  </body>
+</html>

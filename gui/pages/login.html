@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <title>Авторизация SIBUR</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Loading Bootstrap -->
+    <link href="../frameworks/flat_ui/bootstrap/css/bootstrap.css" rel="stylesheet">
+
+    <!-- Loading Flat UI -->
+    <link href="../frameworks/flat_ui/css/flat-ui.css" rel="stylesheet">
+
+    <link rel="shortcut icon" href="../frameworks/flat_ui/dist/img/favicon.ico">
+	  
+  </head>
+  <body>
+    <style>
+      html,body {
+		  margin:0;
+		  padding:0;
+		  width:100%;
+		  height:100%;
+      }
+	  .login-form {
+			position: relative;
+			padding: 24px 23px 20px;
+			background-color: #edeff1;
+			border-radius: 6px;
+	   }
+	   .login-form .login-field {
+			font-size: 17px;
+			text-indent: 3px;
+			border-color: transparent;
+		}
+		.login-form .login-field-icon {
+			position: absolute;
+			top: 3px;
+			right: 15px;
+			font-size: 16px;
+			color: #bfc9ca;
+			-webkit-transition: all .25s;
+			transition: all .25s;
+		}
+		.login-link {
+			display: block;
+			margin-top: 15px;
+			font-size: 13px;
+			color: #bfc9ca;
+			text-align: center;
+		}
+		.login-form .login-field:focus {
+			border-color: #0a8a93;
+		}
+		.login-form .login-field:focus + .login-field-icon {
+			color: #0a8a93;
+		}
+		 .btn-primary {
+			 background-color: #0a8a93;
+		 }
+		 .btn-primary:hover, .btn-primary.hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .open .dropdown-toggle.btn-primary {
+			color: #ffffff;
+			background-color: #09747b;
+			border-color: #09747b;
+		}
+		a:hover, a:focus {
+			color: #09747b;
+			text-decoration: none;
+		}
+    </style>
+	<center style="position: absolute; width:100%">
+		<img src="../common/images/Sibur_logo.png" style="max-width: 80%; height: auto; width:200px; margin-top: 80px;"></img>
+	</center>
+    <table cellpadding="0" cellspacing="0" style="background:#0a8a93; width:100%; height:100%; margin:0; padding:0; text-align:center">
+    	<tr>
+        	<td style="vertical-align:middle"><center>
+            	<h4 style="color:#fff"><small>Авторизация</small></h4>
+          <div class="login-form" style="max-width: 300px; margin:0 20px;">
+			  <form action="main.html">
+            <div class="form-group">
+            
+              <input type="text" class="form-control login-field" value="" placeholder="Логин или Email" id="login-name">
+              <label class="login-field-icon fui-user" for="login-name"></label>
+            </div>
+
+            <div class="form-group">
+              <input type="password" class="form-control login-field" value="" placeholder="Пароль" id="login-pass">
+              <label class="login-field-icon fui-lock" for="login-pass"></label>
+            </div>
+
+            <a class="btn btn-primary btn-lg btn-block" onclick='javascript:document.forms[0].submit()'>Войти</a>
+            <a class="login-link" href="#">Забыли пароль?</a>
+          </div></form>
+</center>
+            </td>
+        </tr>
+    </table>
+   	
+    <script src="../frameworks/flat_ui/js/jquery-1.8.3.min.js"></script>
+    <script src="../frameworks/flat_ui/js/jquery-ui-1.10.3.custom.min.js"></script>
+    <script src="../frameworks/flat_ui/js/jquery.ui.touch-punch.min.js"></script>
+    <script src="../frameworks/flat_ui/js/bootstrap.min.js"></script>
+    <script src="../frameworks/flat_ui/js/bootstrap-select.js"></script>
+    <script src="../frameworks/flat_ui/js/bootstrap-switch.js"></script>
+    <script src="../frameworks/flat_ui/js/flatui-checkbox.js"></script>
+    <script src="../frameworks/flat_ui/js/flatui-radio.js"></script>
+    <script src="../frameworks/flat_ui/js/holder.js"></script>
+    <script src="../frameworks/flat_ui/js/flatui-fileinput.js"></script>
+    <script src="../frameworks/flat_ui/js/jquery.tagsinput.js"></script>
+    <script src="../frameworks/flat_ui/js/jquery.placeholder.js"></script>
+    <script src="../frameworks/flat_ui/js/typeahead.js"></script>
+    <script src="../frameworks/flat_ui/js/application.js"></script>
+
+  </body>
+</html>
